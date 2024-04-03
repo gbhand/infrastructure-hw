@@ -1,13 +1,12 @@
-# Python 3 server example
 import os
-from flask import Flask, request
+from flask import Flask, request, render_template
+from flask_socketio import SocketIO
 from datetime import datetime, timezone
 
 app = Flask(__name__)
+socket = SocketIO(app=app)
 
-messages = []
-
-@app.route("/", methods=["POST"])
+@app.route("/post", methods=["POST"])
 def handle_post() -> None:
     try:
         message = request.get_json()["message"]
@@ -16,15 +15,15 @@ def handle_post() -> None:
         print(f"Failed to parse request: {request.data} with error {exc}")
         return
 
-    messages.append({"timestamp": timestamp, "message": message})
+    socket.emit("new_request", f"{timestamp}: {message}")
     result = f"Recieved message {message} at {timestamp}"
     print(result)
+    
     return result
 
-
-@app.route("/", methods=["GET"])
-def handle_get() -> None:
-    return "\n".join(str(message["timestamp"]) + ": " + message["message"] for message in messages)
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=os.environ.get("PORT", 8080), debug=True)
+    socket.run(app=app, host="0.0.0.0", port=os.environ.get("PORT", 8080))
