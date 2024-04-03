@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# TODO
+# A simple wrapper managing the infrastructure-hw project.
 #
 
 set -e
@@ -17,7 +17,7 @@ usage() {
     echo
     echo "Usage: ${BASH_SOURCE[0]} [ACTION]"
     echo 
-    ehco "  When run without [ACTION] this script will automatically create all resources needed."
+    echo "  When run without [ACTION] this script will automatically create all resources needed."
     echo
     echo "  [ACTION]     Action to perform"
     echo "    Allowed options:"
@@ -45,7 +45,7 @@ error() {
 }
 
 configure() {
-    # TODO
+    # Set k8s environment variables, reading from local .env if exists.
     if [[ -f ".env" ]]; then
         # shellcheck source=/dev/null
         source ".env"
@@ -83,25 +83,22 @@ verify_helm() {
 }
 
 start_minikube() {
-    # TODO
     verify_minikube
     minikube start
 }
 
 delete_minikube() {
-    # TODO
     verify_minikube
     minikube delete
 }
 
 start_k9s() {
-    # TODO
     verify_k9s
     k9s
 }
 
 build_images() {
-    # TODO
+    # Builds each directory in ./docker with the minikube docker environment.
     verify_docker
 
     info "Attempting to fetch minikube docker-env"
@@ -120,18 +117,13 @@ build_images() {
 }
 
 deploy_helm() {
-    # TODO
+    # Installs/upgrades each chart in ./helm then prints host-accessible app URL.
     verify_helm
 
     find "${SCRIPT_DIR}/helm" -maxdepth 1 -mindepth 1 -type d -print0 | while IFS= read -r -d '' subdir; do 
         release="$(basename "${subdir}")"
         info "Deploying chart ${release} from ${subdir}"
-        if helm status "${release}" &> /dev/null; then
-            info "${release} already installed, upgrading instead."
-            helm upgrade "${release}" "${subdir}"
-        else
-            helm install "${release}" "${subdir}"
-        fi
+        helm upgrade --install "${release}" "${subdir}"
     done
 
     info "Helm charts successfully deployed! The deployed webapp can be viewed from the following URL (CTRL-C to quit)"
