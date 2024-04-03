@@ -180,6 +180,8 @@ main() {
         deploy)
             info "Deploying helm charts from ${SCRIPT_DIR}/helm with config ${KUBECONFIG}"
             deploy_helm
+            info "Retrieving host port from minikube..."
+            minikube service hello-receive --url
             ;;
         delete)
             info "Deleting minikube cluster with config ${KUBECONFIG}"
