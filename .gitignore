@@ -3,3 +3,7 @@
 
 # Local kube config
 .kube
+
+# Python virtual environments
+.venv
+venv
