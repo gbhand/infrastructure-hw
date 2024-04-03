@@ -1,0 +1,5 @@
+# Local config
+.env
+
+# Local kube config
+.kube
