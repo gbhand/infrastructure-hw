@@ -1,14 +1,14 @@
-# Default values for test.
+# Default values for hello-send.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
 
 image:
-  repository: nginx
+  repository: "hello-send"
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -72,13 +72,21 @@ resources: {}
   #   memory: 128Mi
 
 livenessProbe:
-  httpGet:
-    path: /
-    port: http
+  exec:
+    command:
+      - test
+      - -f
+      - /src/liveness
+    initialDelaySeconds: 1
+    periodSeconds: 3
 readinessProbe:
-  httpGet:
-    path: /
-    port: http
+  exec:
+    command:
+      - test
+      - -f
+      - /liveness
+    initialDelaySeconds: 1
+    periodSeconds: 3
 
 autoscaling:
   enabled: false

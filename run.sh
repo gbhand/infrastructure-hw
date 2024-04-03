@@ -23,7 +23,6 @@ usage() {
     echo "       - build:  Build Docker images"
     echo "       - deploy: Deploy Helm charts to running cluster"
     echo "       - delete: Stop cluster and remove any created resources"
-    echo "       - test:   TODO"
     echo "       - k9s:    Start k9s terminal for running cluster"
     echo
     echo "  -q | --quiet         Print less messages from this script"
@@ -148,7 +147,7 @@ main() {
                 readonly QUIET
                 shift
                 ;;
-            start|build|deploy|delete|test|k9s)
+            start|build|deploy|delete|k9s)
                 ACTION="$1"
                 readonly ACTION
                 shift
@@ -181,11 +180,9 @@ main() {
         deploy)
             info "Deploying helm charts from ${SCRIPT_DIR}/helm with config ${KUBECONFIG}"
             deploy_helm
+            info "Retrieving host port from minikube..."
+            minikube service hello-receive --url
             ;;
-        # test)
-        #     info "Testing helm charts from ${SCRIPT_DIR}/helm with config ${KUBECONFIG}"
-        #     test_helm
-        #     ;;
         delete)
             info "Deleting minikube cluster with config ${KUBECONFIG}"
             delete_minikube
