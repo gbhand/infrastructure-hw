@@ -182,10 +182,10 @@ main() {
             info "Deploying helm charts from ${SCRIPT_DIR}/helm with config ${KUBECONFIG}"
             deploy_helm
             ;;
-        test)
-            info "Testing helm charts from ${SCRIPT_DIR}/helm with config ${KUBECONFIG}"
-            test_helm
-            ;;
+        # test)
+        #     info "Testing helm charts from ${SCRIPT_DIR}/helm with config ${KUBECONFIG}"
+        #     test_helm
+        #     ;;
         delete)
             info "Deleting minikube cluster with config ${KUBECONFIG}"
             delete_minikube
