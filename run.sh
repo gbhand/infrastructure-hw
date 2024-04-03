@@ -125,11 +125,10 @@ deploy_helm() {
     find "${SCRIPT_DIR}/helm" -maxdepth 1 -mindepth 1 -type d -print0 | while IFS= read -r -d '' subdir; do 
         release="$(basename "${subdir}")"
         info "Deploying chart ${release} from ${subdir}"
-        if helm status "${release}" > /dev/null; then
+        if helm status "${release}" &> /dev/null; then
             info "${release} already installed, upgrading instead."
             helm upgrade "${release}" "${subdir}"
         else
-            info "Installing helm release ${release} from ${subdir}"
             helm install "${release}" "${subdir}"
         fi
     done
