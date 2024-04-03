@@ -72,13 +72,21 @@ resources: {}
   #   memory: 128Mi
 
 livenessProbe:
-  httpGet:
-    path: /
-    port: http
+  exec:
+    command:
+      - test
+      - -f
+      - /src/liveness
+    initialDelaySeconds: 1
+    periodSeconds: 3
 readinessProbe:
-  httpGet:
-    path: /
-    port: http
+  exec:
+    command:
+      - test
+      - -f
+      - /liveness
+    initialDelaySeconds: 1
+    periodSeconds: 3
 
 autoscaling:
   enabled: false
