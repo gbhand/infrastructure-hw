@@ -26,4 +26,4 @@ def index():
     return render_template("index.html")
 
 if __name__ == "__main__":
-    socket.run(app=app, host="0.0.0.0", port=os.environ.get("PORT", 8080))
+    socket.run(app=app, host="0.0.0.0", port=os.environ.get("PORT", 8080), allow_unsafe_werkzeug=True)
