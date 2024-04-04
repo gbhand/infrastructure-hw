@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# TODO
+# A simple wrapper managing the infrastructure-hw project.
 #
 
 set -e
@@ -16,6 +16,8 @@ usage() {
     # Print usage information about this script to STDOUT.
     echo
     echo "Usage: ${BASH_SOURCE[0]} [ACTION]"
+    echo 
+    echo "  When run without [ACTION] this script will automatically create all resources needed."
     echo
     echo "  [ACTION]     Action to perform"
     echo "    Allowed options:"
@@ -43,7 +45,7 @@ error() {
 }
 
 configure() {
-    # TODO
+    # Set k8s environment variables, reading from local .env if exists.
     if [[ -f ".env" ]]; then
         # shellcheck source=/dev/null
         source ".env"
@@ -81,25 +83,22 @@ verify_helm() {
 }
 
 start_minikube() {
-    # TODO
     verify_minikube
     minikube start
 }
 
 delete_minikube() {
-    # TODO
     verify_minikube
     minikube delete
 }
 
 start_k9s() {
-    # TODO
     verify_k9s
     k9s
 }
 
 build_images() {
-    # TODO
+    # Builds each directory in ./docker with the minikube docker environment.
     verify_docker
 
     info "Attempting to fetch minikube docker-env"
@@ -118,19 +117,17 @@ build_images() {
 }
 
 deploy_helm() {
-    # TODO
+    # Installs/upgrades each chart in ./helm then prints host-accessible app URL.
     verify_helm
 
     find "${SCRIPT_DIR}/helm" -maxdepth 1 -mindepth 1 -type d -print0 | while IFS= read -r -d '' subdir; do 
         release="$(basename "${subdir}")"
         info "Deploying chart ${release} from ${subdir}"
-        if helm status "${release}" &> /dev/null; then
-            info "${release} already installed, upgrading instead."
-            helm upgrade "${release}" "${subdir}"
-        else
-            helm install "${release}" "${subdir}"
-        fi
+        helm upgrade --install "${release}" "${subdir}"
     done
+
+    info "Helm charts successfully deployed! The deployed webapp can be viewed from the following URL (CTRL-C to quit)"
+    minikube service hello-receive --url
 
 }
 
@@ -160,42 +157,48 @@ main() {
         esac
     done
 
-    if [ -z "${ACTION}" ]; then
-        error "ACTION must be provided"
-        usage
-        exit 1
-    fi
-
     configure
 
-    case "${ACTION}" in
-        start)
-            info "Starting minikube with config ${KUBECONFIG}"
-            start_minikube
-            ;;
-        build)
-            info "Building all images in ${SCRIPT_DIR}/docker within minikube VM"
-            build_images
-            ;;
-        deploy)
-            info "Deploying helm charts from ${SCRIPT_DIR}/helm with config ${KUBECONFIG}"
-            deploy_helm
-            info "Retrieving host port from minikube..."
-            minikube service hello-receive --url
-            ;;
-        delete)
-            info "Deleting minikube cluster with config ${KUBECONFIG}"
+    if [ -z "${ACTION}" ]; then
+        info "No action provided, creating new stack from scratch."
+        if minikube status > /dev/null; then
+            info "minikube already running, terminating existing cluster"
             delete_minikube
-            ;;
-        k9s)
-            info "Entering k9s terminal with config ${KUBECONFIG}"
-            start_k9s
-            ;;
-        *)
-            error "Action ${ACTION} not implemented"
-            exit 1
-            ;;
-    esac
+        fi
+
+        start_minikube
+        build_images
+        deploy_helm
+        delete_minikube
+    else
+
+        case "${ACTION}" in
+            start)
+                info "Starting minikube with config ${KUBECONFIG}"
+                start_minikube
+                ;;
+            build)
+                info "Building all images in ${SCRIPT_DIR}/docker within minikube VM"
+                build_images
+                ;;
+            deploy)
+                info "Deploying helm charts from ${SCRIPT_DIR}/helm with config ${KUBECONFIG}"
+                deploy_helm
+                ;;
+            delete)
+                info "Deleting minikube cluster with config ${KUBECONFIG}"
+                delete_minikube
+                ;;
+            k9s)
+                info "Entering k9s terminal with config ${KUBECONFIG}"
+                start_k9s
+                ;;
+            *)
+                error "Action ${ACTION} not implemented"
+                exit 1
+                ;;
+        esac
+    fi
 }
 
 main "$@"
